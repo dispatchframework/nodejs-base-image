@@ -15,24 +15,24 @@ function printTo(logs) {
     }
 }
 
-function patchLog(logs) {
-    console.info = printTo(logs);
-    console.warn = printTo(logs);
-    console.error = printTo(logs);
-    console.log = printTo(logs);
+function patchLog(stderr, stdout) {
+    console.log = printTo(stdout);
+    console.info = printTo(stdout);
+    console.warn = printTo(stderr);
+    console.error = printTo(stderr);
 }
 
 function wrap(f) {
     return async ({context, payload}) => {
-        let [logs, r, err] = [[], null, null];
+        let [stderr, stdout, r, err] = [[], [], null, null];
         try {
-            patchLog(logs);
+            patchLog(stderr, stdout);
             r = await f(context, payload);
         } catch (e) {
             printTo(e.stack);
             err = e;
         }
-        return {context: {logs: logs, error: err}, payload: r}
+        return {context: {logs: {stderr: stderr, stdout: stdout}, error: err}, payload: r}
     }
 }
 
