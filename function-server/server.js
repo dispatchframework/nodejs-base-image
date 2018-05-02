@@ -11,7 +11,7 @@ const util = require('util');
 
 function printTo(logs) {
     return (str, ...args) => {
-        logs.push(util.format(str, ...args));
+        logs.push(...util.format(str, ...args).split(/\r?\n/));
     }
 }
 
@@ -29,8 +29,8 @@ function wrap(f) {
             patchLog(stderr, stdout);
             r = await f(context, payload);
         } catch (e) {
-            printTo(e.stack);
             err = e;
+            console.error(e.stack);
         }
         return {context: {logs: {stderr: stderr, stdout: stdout}, error: err}, payload: r}
     }
@@ -46,3 +46,9 @@ console.log("Function Runtime API started");
 
 process.on('SIGTERM', process.exit);
 process.on('SIGINT', process.exit);
+
+module.exports = {
+    printTo: printTo,
+    patchLog: patchLog,
+    wrap: wrap
+};

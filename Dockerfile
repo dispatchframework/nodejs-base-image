@@ -17,6 +17,6 @@ EXPOSE ${PORT}
 COPY function.js ${FUNCTION_MODULE}
 
 COPY function-server /function-server/
-RUN cd /function-server; npm install
+RUN cd /function-server; npm install --production
 
 CMD ["node", "/function-server/server.js"]
