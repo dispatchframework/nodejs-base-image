@@ -1,7 +1,11 @@
 ARG IMAGE
 FROM ${IMAGE}
 
-ARG FUNCTION_SRC=function.txt
+WORKDIR ${WORKDIR}
 
-# FUNCTION_MODULE env var is set in the base-image
-COPY ${FUNCTION_SRC} ${FUNCTION_MODULE}
+ARG HANDLER
+ENV HANDLER=${HANDLER}
+
+COPY . .
+
+CMD ["node", "/function-server/server.js"]
