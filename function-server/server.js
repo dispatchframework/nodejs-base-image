@@ -9,6 +9,9 @@ const {FUNCTION_MODULE, PORT} = process.env;
 
 const util = require('util');
 
+const INPUT_ERROR = 'InputError';
+const FUNCTION_ERROR = 'FunctionError';
+
 function printTo(logs) {
     return (str, ...args) => {
         logs.push(...util.format(str, ...args).split(/\r?\n/));
@@ -29,10 +32,16 @@ function wrap(f) {
             patchLog(stderr, stdout);
             r = await f(context, payload);
         } catch (e) {
-            err = e;
             console.error(e.stack);
+            let stacktrace = [];
+            printTo(stacktrace)(e.stack);
+            if (e instanceof TypeError) {
+                err = {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
+            } else {
+                err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
+            }
         }
-        return {context: {logs: {stderr: stderr, stdout: stdout}, error: err}, payload: r}
+        return {context: {logs: {stderr: stderr, stdout: stdout}, error: err}, payload: r};
     }
 }
 
@@ -48,6 +57,8 @@ process.on('SIGTERM', process.exit);
 process.on('SIGINT', process.exit);
 
 module.exports = {
+    INPUT_ERROR: INPUT_ERROR,
+    FUNCTION_ERROR: FUNCTION_ERROR,
     printTo: printTo,
     patchLog: patchLog,
     wrap: wrap
