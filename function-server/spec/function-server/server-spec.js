@@ -67,6 +67,14 @@ describe("server tests", function() {
             let a = undefinedVariable;
         };
 
+        const lower = function(context, params) {
+            if (typeof params !== 'string') {
+                throw new TypeError("payload is not of type string");
+            }
+
+            return params.toLowerCase();
+        };
+
         it("should return valid response with hello function" , async function() {
             let payload = {"name": "Jon", "place": "Winterfell"};
             const f = server.wrap(hello);
@@ -79,12 +87,26 @@ describe("server tests", function() {
             expect(r.payload).toEqual({"myField": "Hello, Jon from Winterfell"});
         });
 
-        it ("should return an error with fail function", async function() {
+        it ("should return a FunctionError with fail function", async function() {
             const f = server.wrap(fail);
             let r = await f({'context': null, 'payload': null});
 
-            expect(r.context.error).toEqual(jasmine.any(ReferenceError));
+            expect(r.context.error.type).toEqual(server.FUNCTION_ERROR);
+            expect(r.context.error.message).toEqual("undefinedVariable is not defined");
+            expect(r.context.error.stacktrace).toEqual(r.context.logs.stderr);
             expect(r.context.logs.stderr[0].startsWith("ReferenceError: undefinedVariable is not defined")).toBeTruthy();
+            expect(r.context.logs.stdout.length === 0).toBeTruthy();
+            expect(r.payload).toBeNull();
+        });
+
+        it ("should return an InputError with lower function on invalid input", async function() {
+            const f = server.wrap(lower);
+            let r = await f({'context': null, 'payload': 1});
+
+            expect(r.context.error.type).toEqual(server.INPUT_ERROR);
+            expect(r.context.error.message).toEqual("payload is not of type string");
+            expect(r.context.error.stacktrace).toEqual(r.context.logs.stderr);
+            expect(r.context.logs.stderr[0].startsWith("TypeError: payload is not of type string")).toBeTruthy();
             expect(r.context.logs.stdout.length === 0).toBeTruthy();
             expect(r.payload).toBeNull();
         });

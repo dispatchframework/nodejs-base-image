@@ -1,7 +1,7 @@
 # nodejs-base-image
 JavaScript (Node.js) support for Dispatch
 
-Latest image [on Docker Hub](https://hub.docker.com/r/dispatchframework/nodejs-base/): `dispatchframework/nodejs-base:0.0.4`
+Latest image [on Docker Hub](https://hub.docker.com/r/dispatchframework/nodejs-base/): `dispatchframework/nodejs-base:0.0.5`
 
 ## Usage
 
@@ -11,7 +11,7 @@ You need a recent version of Dispatch [installed in your Kubernetes cluster, Dis
 
 To add the base-image to Dispatch:
 ```bash
-$ dispatch create base-image nodejs-base dispatchframework/nodejs-base:0.0.4
+$ dispatch create base-image nodejs-base dispatchframework/nodejs-base:0.0.5
 ```
 
 Make sure the base-image status is `READY` (it normally goes from `INITIALIZED` to `READY`):
@@ -100,3 +100,36 @@ $ dispatch exec --json --input '{"val": 12}' --wait math-js
     "tags": []
 }
 ```
+
+## Error Handling
+
+There are three types of errors that can be thrown when invoking a function:
+* `InputError`
+* `FunctionError`
+* `SystemError`
+
+`SystemError` represents an error in the Dispatch infrastructure. `InputError` represents an error in the input detected either early in the function itself or through input schema validation. `FunctionError` represents an error in the function logic or an output schema validation error.
+
+Functions themselves can either throw `InputError` or `FunctionError`
+
+### Input Validation
+
+For Node.js, the following exceptions thrown from the function are considered `InputError`:
+* **`TypeError`**
+
+All other exceptions thrown from the function are considered `FunctionError`.
+
+To validate input in the function body:
+```javascript
+module.exports = function(context, payload) {
+    if (typeof payload !== 'string') {
+        throw new TypeError("payload is not of type string");
+    }
+
+    return payload.toLowerCase();
+};
+```
+
+### Note
+
+Since **`TypeError`** is considered an `InputError`, functions should not throw it unless explicitly thrown due to an input validation error. Functions should catch and handle **`TypeError`** accordingly if it should not be classified as an `InputError`. 
