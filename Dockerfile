@@ -1,4 +1,4 @@
-FROM vmware/photon2:20180302
+FROM vmware/photon2:20180424
 
 RUN tdnf install -y nodejs-8.3.0-1.ph2
 
@@ -11,10 +11,12 @@ LABEL io.dispatchframework.imageTemplate="${IMAGE_TEMPLATE}" \
 COPY image-template ${IMAGE_TEMPLATE}/
 COPY function-template ${FUNCTION_TEMPLATE}/
 
-ENV FUNCTION_MODULE=/function.js PORT=8080
-EXPOSE ${PORT}
+## Set WORKDIR and PORT, expose $PORT, cd to $WORKDIR
 
-COPY function.js ${FUNCTION_MODULE}
+ENV WORKDIR=/function PORT=8080
+
+EXPOSE ${PORT}
+WORKDIR ${WORKDIR}
 
 COPY function-server /function-server/
 RUN cd /function-server; npm install --production

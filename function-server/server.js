@@ -5,7 +5,7 @@
 
 'use strict';
 
-const {FUNCTION_MODULE, PORT} = process.env;
+const {HANDLER, PORT} = process.env;
 
 const util = require('util');
 
@@ -45,7 +45,7 @@ function wrap(f) {
     }
 }
 
-const fun = wrap(require(FUNCTION_MODULE));
+const fun = wrap(require(`${process.cwd()}/${HANDLER}`));
 const createApp = require('./http-api');
 
 const app = createApp(fun);
