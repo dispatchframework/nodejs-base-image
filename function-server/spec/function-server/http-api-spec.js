@@ -7,7 +7,7 @@
 
 describe("http-api tests", function() {
     // server depends on these environmental variables
-    process.env.FUNCTION_MODULE = "../function";
+    process.argv[2] = "../function.js";
     process.env.PORT = 8080;
 
     const server = require('../../server');

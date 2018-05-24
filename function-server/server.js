@@ -45,7 +45,7 @@ function wrap(f) {
     }
 }
 
-const fun = wrap(require(`${process.cwd()}/${HANDLER}`));
+const fun = wrap(require(`${process.cwd()}/${process.argv[2]}`));
 const createApp = require('./http-api');
 
 const app = createApp(fun);

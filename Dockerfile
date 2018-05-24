@@ -21,4 +21,4 @@ WORKDIR ${WORKDIR}
 COPY function-server /function-server/
 RUN cd /function-server; npm install --production
 
-CMD ["node", "/function-server/server.js"]
+CMD node /function-server/server.js $(cat /tmp/handler)

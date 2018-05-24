@@ -8,4 +8,8 @@ ENV HANDLER=${HANDLER}
 
 COPY . .
 
-CMD ["node", "/function-server/server.js"]
+# Create handler file if passed in otherwise assume default handler
+RUN echo -n ${HANDLER} > /tmp/handler
+RUN [ -z "${HANDLER}" ] && \
+    [ $(ls *.js | wc -l) -eq "1" ] && \
+    ls *.js > /tmp/handler || :
