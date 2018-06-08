@@ -5,7 +5,7 @@
 
 'use strict';
 
-const {HANDLER, PORT} = process.env;
+const {PORT} = process.env;
 
 const util = require('util');
 

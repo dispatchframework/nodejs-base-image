@@ -3,4 +3,4 @@ set -e -x
 
 cd $(dirname $0)
 
-docker build -t dispatchframework/nodejs-base:0.0.7 .
+docker build -t dispatchframework/nodejs-base:0.0.8 .

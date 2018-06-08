@@ -1,0 +1,16 @@
+{
+  "name": "@dispatchfw/validator",
+  "version": "0.0.1",
+  "description": "Node.js Dispatch function validator",
+  "private": true,
+  "main": "validator.js",
+  "scripts": {
+    "test": "node node_modules/jasmine/bin/jasmine"
+  },
+  "devDependencies": {
+    "jasmine": "^3.1.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0"
+}
