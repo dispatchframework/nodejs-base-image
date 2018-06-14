@@ -40,7 +40,7 @@ function wrap(file) {
     });
     var f = require(file);
     return async ({context, payload}) => { 
-        let [stderr, stdout, r, err] = [[], [], null, null];
+        let [stderr, stdout, r, err, promise] = [[], [], null, null, null];
         patchLog(stderr, stdout);
         try {
             if (context['timeout']) {
@@ -49,18 +49,17 @@ function wrap(file) {
                     CONTEXT: JSON.stringify(context),
                     PAYLOAD: JSON.stringify(payload)
                 })
-                var promise = new Promise((resolve, reject, onCancel) => {
+                promise = new Promise((resolve, reject, onCancel) => {
                     onCancel(() => {
                         worker.kill();
                     })
-                    cluster.on("message", (w, message) => {
-                        console.log(JSON.stringify(message))
-                        if (message instanceof TypeError) {
+                    cluster.on("message", getMessageReceiver((w, message) => {
+                        if (message instanceof Error) {
                             reject(message)
                         } else {
                             resolve(message)
                         }
-                    });
+                    }));
                 });
                 r = await promise.timeout(context['timeout'])
             } else {
@@ -75,6 +74,7 @@ function wrap(file) {
             } else if (e instanceof Promise.TimeoutError) {
                 err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
                 HEALTHY = false;
+                promise.cancel();
             } else {
                 err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
             }
@@ -103,12 +103,27 @@ module.exports = {
     wrap: wrap
 };
 
-function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
+function getMessageReceiver(fn) {
+    return function(worker, data) {
+        var result = data;
+        if (data && data.__error__) {
+            switch (data.name) {
+                case "TypeError": result = new TypeError()
+                break;
+                case "Error":
+                default: result = new Error()
+                break;
 
-function timeout(p, ms) {
-    return Promise.race([p, wait(ms).catch(() => {
-        throw new Error("timeout")
-    })]);
+            }
+            result.message = data.message;
+            result.stack = data.stack;
+            result.name = data.name;
+            Object.keys(data).forEach(function(key) {
+                if (!result[key]) {
+                    result[key] = data[key];
+                }
+            });
+        }
+        return fn.call(this, worker, result);
+    }
 }

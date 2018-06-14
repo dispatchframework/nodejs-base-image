@@ -1,4 +1,4 @@
-module.exports = function (context, params, errorCallback) {
+module.exports = async function (context, params) {
     let name = "Noone";
     if (params.name) {
         name = params.name;
@@ -14,11 +14,11 @@ module.exports = function (context, params, errorCallback) {
     //    now = new Date()
     //}
 
-    //var wait = ms => new Promise(resolve => setTimeout(resolve, ms));
-    //var sleep = wait(5000)
+    var wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    var sleep = wait(5000)
     
-    //await sleep
+    await sleep
 
-    errorCallback(new TypeError("generic error"))
-    //return {myField: 'Hello, ' + name + ' from ' + place}
+    //throw new Error("err")
+    return {myField: 'Hello, ' + name + ' from ' + place}
 };
