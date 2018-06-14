@@ -1,7 +1,7 @@
 # nodejs-base-image
 JavaScript (Node.js) support for Dispatch
 
-Latest image [on Docker Hub](https://hub.docker.com/r/dispatchframework/nodejs-base/): `dispatchframework/nodejs-base:0.0.8`
+Latest image [on Docker Hub](https://hub.docker.com/r/dispatchframework/nodejs-base/)
 
 ## Usage
 
@@ -11,7 +11,7 @@ You need a recent version of Dispatch [installed in your Kubernetes cluster, Dis
 
 To add the base-image to Dispatch:
 ```bash
-$ dispatch create base-image nodejs-base dispatchframework/nodejs-base:0.0.8
+$ dispatch create base-image nodejs-base dispatchframework/nodejs-base:<tag>
 ```
 
 Make sure the base-image status is `READY` (it normally goes from `INITIALIZED` to `READY`):
@@ -47,7 +47,7 @@ $ dispatch get image nodejs-mylibs
 
 Using the Node.js base-image, you can create Dispatch functions from Node.js (javascript) source files. The file can require any libraries from the image (see above).
 
-The only requirement is: **`module.exports`** must be set to a function that accepts 2 arguments (`context` and `payload`), for example:  
+The only requirement is: **`module.exports`** must be set to a function that accepts 2 arguments (`context` and `payload`), for example:
 ```bash
 $ cat ./demo.js
 ```
@@ -132,4 +132,4 @@ module.exports = function(context, payload) {
 
 ### Note
 
-Since **`TypeError`** is considered an `InputError`, functions should not throw it unless explicitly thrown due to an input validation error. Functions should catch and handle **`TypeError`** accordingly if it should not be classified as an `InputError`. 
+Since **`TypeError`** is considered an `InputError`, functions should not throw it unless explicitly thrown due to an input validation error. Functions should catch and handle **`TypeError`** accordingly if it should not be classified as an `InputError`.

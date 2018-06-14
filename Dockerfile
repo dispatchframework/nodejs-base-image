@@ -23,4 +23,7 @@ WORKDIR ${WORKDIR}
 COPY function-server /function-server/
 RUN cd /function-server; npm install --production
 
+# OpenFaaS readiness check depends on this file
+RUN touch /tmp/.lock
+
 CMD node /function-server/server.js $(cat /tmp/handler)
