@@ -8,12 +8,12 @@ ARG SYSTEM_PACKAGES_FILE=system-packages.txt
 COPY ${SYSTEM_PACKAGES_FILE} .
 
 RUN packages=$(cat ${SYSTEM_PACKAGES_FILE} | sed 's/ /-/' | uniq | paste -d' ' -); \
-    [ -n "${packages}" ] && tdnf install -y ${packages} || :
+    if [ -n "${packages}" ]; then tdnf install -y ${packages}; fi
 
 
-WORKDIR ${WORKDIR}/..
+WORKDIR /
 
 ARG PACKAGES_FILE=packages.txt
 COPY ${PACKAGES_FILE} package.json
 
-RUN pj=$(cat package.json); [ -n "${pj}" ] && npm install || :
+RUN pj=$(cat package.json); if [ -n "${pj}" ]; then npm install; fi
