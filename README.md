@@ -59,7 +59,7 @@ module.exports = function (context, payload) {
 ```
 
 ```bash
-$ dispatch create function nodejs-mylibs math-js ./demo.js
+$ dispatch create function math-js ./demo.js --image=nodejs-mylibs --handler=demo.js
 ```
 
 Make sure the function status is `READY` (it normally goes from `INITIALIZED` to `READY`):
