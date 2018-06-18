@@ -5,11 +5,6 @@
 
 'use strict';
 
-const Promise = require('bluebird')
-Promise.config({
-    cancellation: true
-})
-
 var cluster = require('cluster')
 
 const {PORT} = process.env;
@@ -19,7 +14,7 @@ const util = require('util');
 const INPUT_ERROR = 'InputError';
 const FUNCTION_ERROR = 'FunctionError';
 
-var HEALTHY = true
+global.HEALTHY = true
 
 function printTo(logs) {
     return (str, ...args) => {
@@ -49,10 +44,7 @@ function wrap(file) {
                     CONTEXT: JSON.stringify(context),
                     PAYLOAD: JSON.stringify(payload)
                 })
-                promise = new Promise((resolve, reject, onCancel) => {
-                    onCancel(() => {
-                        worker.kill();
-                    })
+                promise = new Promise((resolve, reject) => {
                     cluster.on("message", getMessageReceiver((w, message) => {
                         if (message instanceof Error) {
                             reject(message)
@@ -61,7 +53,7 @@ function wrap(file) {
                         }
                     }));
                 });
-                r = await promise.timeout(context['timeout'])
+                r = await timeout(promise, context['timeout'])
             } else {
                 r = await f(context, payload)
             }
@@ -71,11 +63,10 @@ function wrap(file) {
             printTo(stacktrace)(e.stack);
             if (e instanceof TypeError) {
                 err = {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
-            } else if (e instanceof Promise.TimeoutError) {
-                err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
-                HEALTHY = false;
-                promise.cancel();
             } else {
+                if (e.message === 'timeout') {
+                    HEALTHY = false
+                }
                 err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
             }
         }
@@ -97,11 +88,20 @@ process.on('SIGINT', process.exit);
 module.exports = {
     INPUT_ERROR: INPUT_ERROR,
     FUNCTION_ERROR: FUNCTION_ERROR,
-    HEALTHY: HEALTHY,
     printTo: printTo,
     patchLog: patchLog,
     wrap: wrap
 };
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function timeout(p, ms) {
+    return Promise.race([p, wait(ms).then(resolve => {
+        throw new Error('timeout')
+    } )])
+}
 
 function getMessageReceiver(fn) {
     return function(worker, data) {

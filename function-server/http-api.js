@@ -15,7 +15,7 @@ module.exports = (fun) => {
 
     app.get('/healthz', (req, res) => {
         if (!HEALTHY) {
-            res.status = 500
+            res.statusCode = 500
         }
         res.json({});
     });
