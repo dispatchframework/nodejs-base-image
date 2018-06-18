@@ -14,6 +14,9 @@ module.exports = (fun) => {
     const app = express();
 
     app.get('/healthz', (req, res) => {
+        if (!HEALTHY) {
+            res.statusCode = 500
+        }
         res.json({});
     });
 
