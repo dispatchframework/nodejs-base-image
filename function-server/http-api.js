@@ -20,7 +20,16 @@ module.exports = (fun) => {
     app.use(/.*/, bodyParser.json({strict: false}));
 
     app.post(/.*/, async (req, res) => {
-        res.json(await fun(req.body));
+        output = await fun(req.body)
+        if (!output['type']) {
+            if (output['type'] === INPUT_ERROR) {
+                res.status = 400
+            }
+            if (output['type'] === FUNCTION_ERROR) {
+                res.status == 502
+            }
+        }
+        res.json(output);
     });
 
     app.use(function errorHandler (err, req, res, next) {
@@ -30,7 +39,7 @@ module.exports = (fun) => {
       let stacktrace = err.stack.split(/\r?\n/);
       let e = {type: SYSTEM_ERROR, message: err.message, stacktrace: stacktrace};
       res.status(500);
-      res.json({context: {logs: {stderr: stacktrace, stdout: []}, error: e}, payload: null});
+      res.json(e);
     });
 
     return app;
