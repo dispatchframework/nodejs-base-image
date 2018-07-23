@@ -12,6 +12,8 @@ const util = require('util');
 const INPUT_ERROR = 'InputError';
 const FUNCTION_ERROR = 'FunctionError';
 
+global.HEALTHY = true;
+
 function printTo(logs) {
     return (str, ...args) => {
         logs.push(...util.format(str, ...args).split(/\r?\n/));
@@ -30,7 +32,11 @@ function wrap(f) {
         let [stderr, stdout, r, err] = [[], [], null, null];
         try {
             patchLog(stderr, stdout);
-            r = await f(context, payload);
+            if (context['timeout']) {
+                r = await timeout(promisify(f)(context, payload), context['timeout']);
+            } else {
+                r = await f(context, payload);
+            }
         } catch (e) {
             console.error(e.stack);
             let stacktrace = [];
@@ -38,6 +44,9 @@ function wrap(f) {
             if (e instanceof TypeError) {
                 err = {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
             } else {
+                if (e.message === 'timeout') {
+                    HEALTHY = false;
+                }
                 err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
             }
         }
@@ -63,3 +72,24 @@ module.exports = {
     patchLog: patchLog,
     wrap: wrap
 };
+
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function timeout(p, ms) {
+    return Promise.race([p, wait(ms).then(resolve => { throw new Error("timeout") })]);
+}
+
+function promisify(f, target) {
+    return async function() {
+        var appliedArgs = arguments
+        return new Promise(async (resolve, reject) => {
+            try {
+                resolve(await f.apply(target, appliedArgs))
+            } catch (e) {
+                reject(e)
+            }
+        });
+    }
+}
