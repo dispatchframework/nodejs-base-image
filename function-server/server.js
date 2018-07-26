@@ -24,17 +24,15 @@ function wrap(f) {
         try {
             r = await f(context, payload);
         } catch (e) {
-            console.error(e.stack);
             let stacktrace = [];
             printTo(stacktrace)(e.stack);
             if (e instanceof TypeError) {
-                err = {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
+                return {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
             } else {
-                err = {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
+                return {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
             }
-            return err
         }
-        return {context: {logs: {stderr: stderr, stdout: stdout}, error: err}, payload: r};
+        return r;
     }
 }
 
@@ -53,6 +51,5 @@ module.exports = {
     INPUT_ERROR: INPUT_ERROR,
     FUNCTION_ERROR: FUNCTION_ERROR,
     printTo: printTo,
-    patchLog: patchLog,
     wrap: wrap
 };

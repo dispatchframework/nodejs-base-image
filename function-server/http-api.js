@@ -7,6 +7,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const server = require('./server')
 
 const SYSTEM_ERROR = 'SystemError';
 
@@ -20,12 +21,12 @@ module.exports = (fun) => {
     app.use(/.*/, bodyParser.json({strict: false}));
 
     app.post(/.*/, async (req, res) => {
-        output = await fun(req.body)
-        if (!output['type']) {
-            if (output['type'] === INPUT_ERROR) {
+        let output = await fun(req.body)
+        if (output['type']) {
+            if (output['type'] === server.INPUT_ERROR) {
                 res.status = 400
             }
-            if (output['type'] === FUNCTION_ERROR) {
+            if (output['type'] === server.FUNCTION_ERROR) {
                 res.status == 502
             }
         }
