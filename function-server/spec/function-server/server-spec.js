@@ -74,18 +74,22 @@ describe("server tests", function() {
 
         it ("should return a FunctionError with fail function", async function() {
             const f = server.wrap(fail);
-            let r = await f({'context': null, 'payload': null});
-
-            expect(r.type).toEqual(server.FUNCTION_ERROR);
-            expect(r.message).toEqual("undefinedVariable is not defined");
+            try {
+                let r = await f({'context': null, 'payload': null});
+            } catch (err) {
+                expect(err.type).toEqual(server.FUNCTION_ERROR);
+                expect(err.message).toEqual("undefinedVariable is not defined");
+            }
         });
 
         it ("should return an InputError with lower function on invalid input", async function() {
             const f = server.wrap(lower);
-            let r = await f({'context': null, 'payload': 1});
-
-            expect(r.type).toEqual(server.INPUT_ERROR);
-            expect(r.message).toEqual("payload is not of type string");
+            try {
+                let r = await f({'context': null, 'payload': 1});
+            } catch (err) {
+                expect(err.type).toEqual(server.INPUT_ERROR);
+                expect(err.message).toEqual("payload is not of type string");
+            }
         });
     });
 });

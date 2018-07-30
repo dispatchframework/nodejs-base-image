@@ -20,16 +20,16 @@ function printTo(logs) {
 
 function wrap(f) {
     return async ({context, payload}) => {
-        let [r, err] = [null, null];
+        let r = null;
         try {
             r = await f(context, payload);
         } catch (e) {
             let stacktrace = [];
             printTo(stacktrace)(e.stack);
             if (e instanceof TypeError) {
-                return {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
+                throw {type: INPUT_ERROR, message: e.message, stacktrace: stacktrace};
             } else {
-                return {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
+                throw {type: FUNCTION_ERROR, message: e.message, stacktrace: stacktrace};
             }
         }
         return r;

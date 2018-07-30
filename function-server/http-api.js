@@ -21,15 +21,19 @@ module.exports = (fun) => {
     app.use(/.*/, bodyParser.json({strict: false}));
 
     app.post(/.*/, async (req, res) => {
-        let output = await fun(req.body)
-        if (output['type']) {
-            if (output['type'] === server.INPUT_ERROR) {
+        let output = null
+        try {
+            output = await fun(req.body)
+        } catch (err) {
+            if (err['type'] === server.INPUT_ERROR) {
                 res.status = 400
             }
-            if (output['type'] === server.FUNCTION_ERROR) {
-                res.status == 502
+            if (err['type'] === server.FUNCTION_ERROR) {
+                res.status = 502
             }
+            output = err
         }
+
         res.json(output);
     });
 
