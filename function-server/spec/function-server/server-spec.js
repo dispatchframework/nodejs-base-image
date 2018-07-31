@@ -37,18 +37,6 @@ describe("server tests", function() {
         });
     });
 
-    describe("function patchLog", function() {
-        it("should print to correct logs", function() {
-            let [stderr, stdout] = [[], []];
-            server.patchLog(stderr, stdout);
-
-            logger();
-
-            expect(stdout).toEqual(["log", "info", "log2", "info2"]);
-            expect(stderr).toEqual(["warn", "error", "warn2", "error2"]);
-        });
-    });
-
     describe("function wrap", function() {
 
         const hello = function (context, params) {
@@ -63,7 +51,7 @@ describe("server tests", function() {
             return {myField: 'Hello, ' + name + ' from ' + place}; 
         };
 
-        const fail = function(context, params) {
+        const failure = function(context, params) {
             let a = undefinedVariable;
         };
 
@@ -81,44 +69,25 @@ describe("server tests", function() {
             
             let r = await f({'context': null, 'payload': payload});
 
-            expect(r.context.error).toBeNull();
-            expect(r.context.logs.stdout.length === 0).toBeTruthy();
-            expect(r.context.logs.stderr.length === 0).toBeTruthy();
-            expect(r.payload).toEqual({"myField": "Hello, Jon from Winterfell"});
+            expect(r).toEqual({"myField": "Hello, Jon from Winterfell"});
         });
 
-        it ("should return a FunctionError with fail function", async function() {
-            const f = server.wrap(fail);
-            let r = await f({'context': null, 'payload': null});
+        it ("should return a FunctionError with failure function", function() {
+            const f = server.wrap(failure);
 
-            expect(r.context.error.type).toEqual(server.FUNCTION_ERROR);
-            expect(r.context.error.message).toEqual("undefinedVariable is not defined");
-            expect(r.context.error.stacktrace).toEqual(r.context.logs.stderr);
-            expect(r.context.logs.stderr[0].startsWith("ReferenceError: undefinedVariable is not defined")).toBeTruthy();
-            expect(r.context.logs.stdout.length === 0).toBeTruthy();
-            expect(r.payload).toBeNull();
+            f({'context': null, 'payload': null}).then(() => fail("Promise should have rejected")).catch((err) => {
+                expect(err.type).toEqual(server.FUNCTION_ERROR);
+                expect(err.message).toEqual("undefinedVariable is not defined")
+            })
         });
 
-        it ("should return an InputError with lower function on invalid input", async function() {
+        it ("should return an InputError with lower function on invalid input", function() {
             const f = server.wrap(lower);
-            let r = await f({'context': null, 'payload': 1});
 
-            expect(r.context.error.type).toEqual(server.INPUT_ERROR);
-            expect(r.context.error.message).toEqual("payload is not of type string");
-            expect(r.context.error.stacktrace).toEqual(r.context.logs.stderr);
-            expect(r.context.logs.stderr[0].startsWith("TypeError: payload is not of type string")).toBeTruthy();
-            expect(r.context.logs.stdout.length === 0).toBeTruthy();
-            expect(r.payload).toBeNull();
-        });
-
-        it ("should return correct logs with logger function", async function() {
-            const f = server.wrap(logger);
-            let r = await f({'context': null, 'payload': null});
-
-            expect(r.context.error).toBeNull();
-            expect(r.context.logs.stdout).toEqual(["log", "info", "log2", "info2"]);
-            expect(r.context.logs.stderr).toEqual(["warn", "error", "warn2", "error2"]);
-            expect(r.payload).toBeUndefined();
+            f({'context': null, 'payload': 1}).then(() => fail("Promise should have rejected")).catch((err) => {
+                expect(err.type).toEqual(server.INPUT_ERROR);
+                expect(err.message).toEqual("payload is not of type string");
+            });
         });
     });
 });

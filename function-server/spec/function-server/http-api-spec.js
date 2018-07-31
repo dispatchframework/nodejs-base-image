@@ -19,10 +19,6 @@ describe("http-api tests", function() {
     describe("app valid request", function() {
         it("should correctly return json response", function(done) {
             const fun = server.wrap((context, params) => {
-                console.log("log");
-                console.info("info");
-                console.warn("warn");
-                console.error("error");
                 return params;
             });
             const app = createApp(fun);
@@ -34,11 +30,8 @@ describe("http-api tests", function() {
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .expect(200)
                 .expect((res) => {
-                    expect(res.body.payload.name).toEqual("Jon");
-                    expect(res.body.payload.place).toEqual("Winterfell");
-                    expect(res.body.context.logs.stderr).toEqual(["warn", "error"]);
-                    expect(res.body.context.logs.stdout).toEqual(["log", "info"]);
-                    expect(res.body.context.error).toBeNull();
+                    expect(res.body.name).toEqual("Jon");
+                    expect(res.body.place).toEqual("Winterfell");
                 })
                 .end(done);
         });
@@ -56,12 +49,8 @@ describe("http-api tests", function() {
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .expect(500)
                 .expect((res) => {
-                    expect(res.body.payload).toBeNull();
-                    expect(res.body.context.logs.stderr[0]).toEqual("SyntaxError: Unexpected end of JSON input");
-                    expect(res.body.context.logs.stdout.length === 0).toBeTruthy();
-                    expect(res.body.context.error.type).toEqual(SYSTEM_ERROR);
-                    expect(res.body.context.error.message).toEqual("Unexpected end of JSON input");
-                    expect(res.body.context.error.stacktrace).toEqual(res.body.context.logs.stderr);
+                    expect(res.body.type).toEqual(SYSTEM_ERROR);
+                    expect(res.body.message).toEqual("Unexpected end of JSON input");
                 })
                 .end(done);
         });
@@ -82,12 +71,8 @@ describe("http-api tests", function() {
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .expect(500)
                 .expect((res) => {
-                    expect(res.body.payload).toBeNull();
-                    expect(res.body.context.logs.stderr[0]).toEqual("PayloadTooLargeError: request entity too large");
-                    expect(res.body.context.logs.stdout.length === 0).toBeTruthy();
-                    expect(res.body.context.error.type).toEqual(SYSTEM_ERROR);
-                    expect(res.body.context.error.message).toEqual("request entity too large");
-                    expect(res.body.context.error.stacktrace).toEqual(res.body.context.logs.stderr);
+                    expect(res.body.type).toEqual(SYSTEM_ERROR);
+                    expect(res.body.message).toEqual("request entity too large");
                 })
                 .end(done);
         });
