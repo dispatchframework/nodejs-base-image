@@ -133,3 +133,17 @@ module.exports = function(context, payload) {
 ### Note
 
 Since **`TypeError`** is considered an `InputError`, functions should not throw it unless explicitly thrown due to an input validation error. Functions should catch and handle **`TypeError`** accordingly if it should not be classified as an `InputError`.
+
+## Running Tests
+
+Unit tests are written in `Jasmine` for both `function-server` and `validator`.
+
+To run tests, ensure you have all the required dependencies:
+```bash
+npm install
+```
+
+Then run:
+```bash
+npm test
+```
