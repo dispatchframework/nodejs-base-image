@@ -16,7 +16,7 @@ COPY validator /validator/
 
 ## Set WORKDIR and PORT, expose $PORT, cd to $WORKDIR
 
-ENV WORKDIR=/function PORT=8080 SERVERS=$servers FUNKY_VERSION=0.1.1
+ENV WORKDIR=/function PORT=8080 SERVERS=$servers FUNKY_VERSION=0.1.2
 
 EXPOSE ${PORT}
 WORKDIR ${WORKDIR}
